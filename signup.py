@@ -104,6 +104,7 @@ def admin_Panel():
         st.rerun()
 
 def student_page():
+    st.subheader("Students Details")
     st.sidebar.button("Back to Admin", on_click=lambda: setattr(st.session_state, "page", "admin"))
     
     option = st.sidebar.selectbox(label="Select an operation", options=("Register", "Search", "Update", "Delete","ViweAll"))
@@ -118,7 +119,7 @@ def student_page():
         stdname = st.text_input("Student name")
         stdaddress = st.text_input("Student Address")
         stdrel = st.text_input("Student Religion")
-        stnDOB = st.date_input("Date of Birth", min_value=date(2008,1,1))
+        stnDOB = st.date_input("Date of Birth", min_value=date(2001,1,1))
         stdsibcot = st.text_input("Sibling count")
         stdgard = st.text_input("Guardian Name")
         stdcontact = st.text_input("Guardian Mobile")
@@ -225,10 +226,10 @@ def student_page():
                 except:
                     st.error(f"An error occurred: {e}")
         elif update_option=="DOB":
-            new = st.text_input("Enter New Birthday")
+            new = st.date_input("Date of Birth", min_value=date(2001,1,1))
             if st.button("Update"):
                 try:     
-                    sql = "UPDATE student SET BOD = %s WHERE ID = %s"
+                    sql = "UPDATE student SET DOB = %s WHERE ID = %s"
                     val = (new, updateID)
                     connection.mycurser.execute(sql,val)
                     st.success("Sucessfully Updated")
@@ -239,7 +240,7 @@ def student_page():
             new = st.text_input("Enter New Sibling count")
             if st.button("Update"):
                 try:     
-                    sql = "UPDATE student SET BOD = %s WHERE ID = %s"
+                    sql = "UPDATE student SET sibling = %s WHERE ID = %s"
                     val = (new, updateID)
                     connection.mycurser.execute(sql,val)
                     st.success("Sucessfully Updated")
@@ -314,7 +315,56 @@ def student_page():
 
                 except:
                     st.error(f"An error occurred: {e}")
-        
+        elif deleteOption=="DOB":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET DOB = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Sibling":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET sibling = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Guardian":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET gardion = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Contact":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET contact = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+    elif option=="ViweAll":
+        try:
+            sql = "select * from student"
+            connection.mycurser.execute(sql)
+            student_table = connection.mycurser.fetchall()
+            for row in student_table:
+                st.write(row)
+        except:
+            st.warning("Cannot viwe Table")
+
     else:
         st.warning("somthing going to wrong")
     
@@ -322,11 +372,275 @@ def student_page():
         admin_Panel()
 
 def teachers_page():
-    st.write("teachers Page")
+    st.sidebar.button("Back to Admin", on_click=lambda: setattr(st.session_state, "page", "admin"))
+    
+    option = st.sidebar.selectbox(label="Select an operation", options=("Register", "Search", "Update", "Delete","ViweAll"))
+    st.subheader("Teachers Details")
+    sql = "SELECT COUNT(ID) AS NumberOfProducts FROM student;"
+    connection.mycurser.execute(sql)
+    student_count = connection.mycurser.fetchall()
+
+    st.write("Registerd Student Count : "+str(student_count[0][0]))
+
+    if option == "Register":
+        stdname = st.text_input("Student name")
+        stdaddress = st.text_input("Student Address")
+        stdrel = st.text_input("Student Religion")
+        stnDOB = st.date_input("Date of Birth", min_value=date(2001,1,1))
+        stdsibcot = st.text_input("Sibling count")
+        stdgard = st.text_input("Guardian Name")
+        stdcontact = st.text_input("Guardian Mobile")
+       
+        if st.button("Insert"):
+            sql = "INSERT INTO student (name, address, religion, DOB, sibling_count, gardian, contact) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            val = (stdname, stdaddress, stdrel, stnDOB, stdsibcot, stdgard, stdcontact)
+            connection.mycurser.execute(sql, val)
+            connection.mydb.commit()
+            st.success("Student registered successfully!")
+    
+    elif option=="Search":
+        searchID = st.number_input("Search By ID", min_value=1)
+        if st.button("Search By ID"):
+            try:
+                sql = "SELECT * FROM student WHERE ID = %s"
+                val = (searchID,)
+                connection.mycurser.execute(sql, val)
+            
+                details = connection.mycurser.fetchall()
+            
+                if details:  
+                    student_data = details[0]
+                
+                
+                    st.write(f"**Student ID:** {student_data[0]}")
+                    st.write(f"**Name:** {student_data[1]}")
+                    st.write(f"**Address:** {student_data[2]}")
+                    st.write(f"**Religion:** {student_data[3]}")
+                    st.write(f"**Date of Birth:** {student_data[4]}")
+                    st.write(f"**Sibling Count:** {student_data[5]}")
+                    st.write(f"**Guardian Name:** {student_data[6]}")
+                    st.write(f"**Guardian Contact:** {student_data[7]}")
+
+                else:
+                    st.warning("No student found with this ID.")
+
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
 
 
+        searchName = st.text_input("Search By Name")
+        if st.button("Search By Name"):
+            try:
+                sql = "SELECT * FROM student WHERE name = %s"
+                val = (searchName,)
+                connection.mycurser.execute(sql, val)
+            
+                details = connection.mycurser.fetchall()
+            
+                if details:  
+                    student_data = details[0]
+                
+                
+                    st.write(f"**Student ID:** {student_data[0]}")
+                    st.write(f"**Name:** {student_data[1]}")
+                    st.write(f"**Address:** {student_data[2]}")
+                    st.write(f"**Religion:** {student_data[3]}")
+                    st.write(f"**Date of Birth:** {student_data[4]}")
+                    st.write(f"**Sibling Count:** {student_data[5]}")
+                    st.write(f"**Guardian Name:** {student_data[6]}")
+                    st.write(f"**Guardian Contact:** {student_data[7]}")
+
+                else:
+                    st.warning("No student found with this name.")
+
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+    elif option=="Update":
+        updateID = st.number_input("Enter Student ID", min_value=1)
+        update_option = st.selectbox(label="Select: What you want to change", options=("Name", "Address", "Religion", "DOB","Sibling","Guardian","Contact"))
+        if update_option=="Name":
+            new = st.text_input("Enter New Name")
+            if st.button("Update"):
+                try:     
+                    sql = "UPDATE student SET name = %s WHERE ID = %s"
+                    val = (new, updateID)
+                    connection.mycurser.execute(sql,val)
+                    
+                    st.success("Sucessfully Updated")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif update_option=="Address":
+            new = st.text_input("Enter New Address")
+            if st.button("Update"):
+                try:     
+                    sql = "UPDATE student SET address = %s WHERE ID = %s"
+                    val = (new, updateID)
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Updated")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif update_option=="Religion":
+            new = st.text_input("Enter New Religion")
+            if st.button("Update"):
+                try:     
+                    sql = "UPDATE student SET religion = %s WHERE ID = %s"
+                    val = (new, updateID)
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Updated")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif update_option=="DOB":
+            new = st.date_input("Date of Birth", min_value=date(2001,1,1))
+            if st.button("Update"):
+                try:     
+                    sql = "UPDATE student SET DOB = %s WHERE ID = %s"
+                    val = (new, updateID)
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Updated")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif update_option=="Sibling":
+            new = st.text_input("Enter New Sibling count")
+            if st.button("Update"):
+                try:     
+                    sql = "UPDATE student SET sibling = %s WHERE ID = %s"
+                    val = (new, updateID)
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Updated")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif update_option=="Guardian":
+            new = st.text_input("Enter New Guardion")
+            if st.button("Update"):
+                try:     
+                    sql = "UPDATE student SET gardion = %s WHERE ID = %s"
+                    val = (new, updateID)
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Updated")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif update_option=="Contact":
+            new = st.text_input("Enter New Contact No")
+            if st.button("Update"):
+                try:     
+                    sql = "UPDATE student SET contact = %s WHERE ID = %s"
+                    val = (new, updateID)
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Updated")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        else:
+            st.warning("Update error")
+
+    elif option=="Delete":
+        deleteID = st.number_input("Enter Student ID", min_value=1)
+        deleteOption = st.selectbox(label="Select: What you want to delete", options=("All","Name","Address","Religion","DOB","Sibling","Guardian","Contact"))
+        if deleteOption=="All":
+            if st.button("Delete"):
+                try:
+                    sql = "DELETE FROM student WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Name":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET name = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Address":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET address = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Religion":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET religion = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="DOB":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET DOB = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Sibling":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET sibling = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Guardian":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET gardion = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+        elif deleteOption=="Contact":
+            if st.button("Delete"):
+                try:
+                    sql = "UPDATE student SET contact = NULL WHERE ID=%s"
+                    val = (deleteID, )
+                    connection.mycurser.execute(sql,val)
+                    st.success("Sucessfully Deleted")
+
+                except:
+                    st.error(f"An error occurred: {e}")
+    elif option=="ViweAll":
+        try:
+            sql = "select * from student"
+            connection.mycurser.execute(sql)
+            student_table = connection.mycurser.fetchall()
+            for row in student_table:
+                st.write(row)
+        except:
+            st.warning("Cannot viwe Table")
+
+    else:
+        st.warning("somthing going to wrong")
+    
     if st.button("Back"):
         admin_Panel()
+
+
+
+
 
 def subjects_page():
     st.write("subject Page")
