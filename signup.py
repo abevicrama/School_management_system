@@ -57,7 +57,7 @@ def main():
 
 def logging():
     
-    st.title("SMS")
+    st.title("Mini School Management System")
     userid = st.selectbox(label="Select your ID", options=("001", "002", "003"))
     Uname = st.text_input("User Name")
     Pwd = st.text_input("Password", type="password")
@@ -367,8 +367,7 @@ def student_page():
     else:
         st.warning("somthing going to wrong")
     
-    if st.button("Back"):
-        admin_Panel()
+
 
 def teachers_page():
     st.sidebar.button("Back to Admin", on_click=lambda: setattr(st.session_state, "page", "admin"))
